@@ -1,0 +1,12 @@
+html {
+    width: 350px;
+    height: 700px;
+}
+
+body {
+    font-family: 'Courier New', Courier, monospace;
+}
+
+div.CardDivStyle1 {
+    margin: 10px;
+}

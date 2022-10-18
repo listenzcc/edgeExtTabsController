@@ -1,0 +1,21 @@
+{
+    "author": "CC",
+    "description": "Get information of the active tab.",
+    "icons": {
+        "48": "src/icons/icon.png",
+        "96": "src/icons/icon.png"
+    },
+    "manifest_version": 3,
+    "name": "myEdgeExt",
+    "version": "1.0",
+    "permissions": [
+        "tabs"
+    ],
+    "action": {
+        "default_icon": {
+            "30": "src/icons/icon.png"
+        },
+        "default_title": "myEdgeExt",
+        "default_popup": "GetTabInfo.html"
+    }
+}
