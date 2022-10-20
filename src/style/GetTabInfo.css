@@ -1,12 +1,30 @@
 html {
     width: 350px;
-    height: 700px;
+    background-color: whitesmoke
 }
 
 body {
     font-family: 'Courier New', Courier, monospace;
 }
 
+div {
+    width: max-content;
+}
+
 div.CardDivStyle1 {
     margin: 10px;
+}
+
+span.active {
+    font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+    font-size:larger;
+    color:brown
+}
+
+h1, h2, h3, h4, h5, h6 {
+    font-style: italic;
+}
+
+li {
+    padding-bottom: 5px;
 }

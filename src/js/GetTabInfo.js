@@ -1,90 +1,123 @@
 window.onload = function () {
+  const API = chrome;
   const root = document.getElementById("info");
-  root.innerHTML = "";
-  root.style.display = "block";
 
-  d3.select(root)
+  const rootLevelDivs = d3
+    .select(root)
     .selectAll("div")
     .data(["currentTab", "otherTabs", "otherWnds"])
     .join("div")
     .attr("id", (d) => d)
     .attr("className", "CardDivStyle1");
 
-  const API = chrome;
+  rootLevelDivs.append("h2").text((d) => d);
 
-  // Current window, current tab
-  const currentTab = root.appendChild(document.createElement("div"));
-  currentTab.className = "CardDivStyle1";
-  currentTab.appendChild(document.createTextNode("Current:"));
-
+  // Update #currentTab
   API.tabs.query({ active: true, currentWindow: true }, function (tabs) {
+    const data = [];
+
     API.tabs.get(tabs[0].id, function (tab) {
-      var node = document.createElement("div");
-      var textnode = document.createTextNode("Url: " + tab.url);
-      node.appendChild(textnode);
+      data.push({
+        url: tab.url,
+        title: tab.title,
+      });
 
-      var node2 = document.createElement("div");
-      var textnode2 = document.createTextNode("Title: " + tab.title);
-      node2.appendChild(textnode2);
-
-      currentTab.appendChild(node);
-      currentTab.appendChild(node2);
+      d3.select("#currentTab")
+        .append("ul")
+        .selectAll("li")
+        .data(data)
+        .join("li")
+        .append("span")
+        .text((d) => d.title)
+        .attr("class", "active");
     });
-    currentTab.style.display = "block";
   });
 
-  // Current window, other tabs
-  const otherTabs = root.appendChild(document.createElement("div"));
-  otherTabs.className = "CardDivStyle1";
-
+  // Update #otherTabs
   API.tabs.query({ active: false, currentWindow: true }, function (tabs) {
-    console.log(tabs);
-    console.log(tabs.length);
-    otherTabs.appendChild(
-      document.createTextNode("Others: (" + tabs.length + ")")
-    );
+    const data = [];
+
     for (let index = 0; index < tabs.length; index++) {
       API.tabs.get(tabs[index].id, function (tab) {
-        var node = document.createElement("div");
-        var textnode = document.createTextNode("Url: " + tab.url);
-        node.appendChild(textnode);
+        data.push({
+          url: tab.url,
+          title: tab.title,
+        });
 
-        var node2 = document.createElement("div");
-        var textnode2 = document.createTextNode("Title: " + tab.title);
-        node2.appendChild(textnode2);
-
-        otherTabs.appendChild(node);
-        otherTabs.appendChild(node2);
+        if (index == tabs.length - 1) {
+          d3.select("#otherTabs")
+            .append("ol")
+            .selectAll("li")
+            .data(data)
+            .join("li")
+            .text((d) => d.title);
+        }
       });
     }
-    otherTabs.style.display = "block";
   });
 
-  // Other window, all tabs
-  const otherWindow = root.appendChild(document.createElement("div"));
-  otherWindow.className = "CardDivStyle1";
-
+  // Update #otherWnds
   API.tabs.query({ currentWindow: false }, function (tabs) {
-    console.log(tabs);
-    console.log(tabs.length);
-    otherWindow.appendChild(
-      document.createTextNode("Other window: (" + tabs.length + ")")
-    );
+    const data = {};
+
     for (let index = 0; index < tabs.length; index++) {
       API.tabs.get(tabs[index].id, function (tab) {
-        var prefix = tab.active ? "+" : "-";
-        var node = document.createElement("div");
-        var textnode = document.createTextNode(prefix + "Url: " + tab.url);
-        node.appendChild(textnode);
+        const { windowId, active, url, title } = tab;
 
-        var node2 = document.createElement("div");
-        var textnode2 = document.createTextNode(prefix + "Title: " + tab.title);
-        node2.appendChild(textnode2);
+        data[windowId] = data[windowId] ? data[windowId] : [];
+        data[windowId].push({
+          url: url,
+          title: title,
+          active: active,
+          wndId: windowId,
+        });
 
-        otherWindow.appendChild(node);
-        otherWindow.appendChild(node2);
+        if (index == tabs.length - 1) {
+          const dataList = [];
+          for (const wndId in data) {
+            dataList.push({
+              wndId,
+              display: "block",
+              data: data[wndId],
+            });
+          }
+
+          const divs = d3
+            .select("#otherWnds")
+            .selectAll("div")
+            .data(dataList)
+            .join("div");
+
+          divs.append("h3").text((d) => {
+            const { wndId, data } = d;
+            return wndId + "(" + data.length + ")";
+          });
+
+          divs
+            .append("ol")
+            .selectAll("li")
+            .data((d) => d.data)
+            .join("li")
+            .append("span")
+            .text((d) => d.title)
+            .attr("class", (d) => (d.active ? "active" : "inactive"));
+
+          d3.select("#otherWnds")
+            .select("h2")
+            .on("click", (e, d) => {
+              console.log("Click", e, d);
+              d3.select(e.target).text(() => {
+                e.target.customData =
+                  e.target.customData == " [+]" ? " [-]" : " [+]";
+                return d + e.target.customData;
+              });
+              divs.attr("style", (d) => {
+                d.display = d.display == "none" ? "block" : "none";
+                return "display:" + d.display;
+              });
+            });
+        }
       });
     }
-    otherWindow.style.display = "block";
   });
 };
